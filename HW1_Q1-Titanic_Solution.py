@@ -373,3 +373,5 @@ models = pd.DataFrame({
               acc_random_forest, acc_gaussian, acc_perceptron, 
               acc_sgd, acc_linear_svc, acc_decision_tree]})
 print(models.sort_values(by='Score', ascending=False))
+
+# TODO: ADD SUBMITTAL TO CSV HERE!!!!!
