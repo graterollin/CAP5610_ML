@@ -23,8 +23,8 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 # Annotating the path to the testing and training sets 
-training_path = 'train.csv'
-testing_path = 'test.csv'
+training_path = 'input/train.csv'
+testing_path = 'input/test.csv'
 
 training_set = pd.read_csv(training_path)
 testing_set = pd.read_csv(testing_path)
@@ -374,4 +374,8 @@ models = pd.DataFrame({
               acc_sgd, acc_linear_svc, acc_decision_tree]})
 print(models.sort_values(by='Score', ascending=False))
 
-# TODO: ADD SUBMITTAL TO CSV HERE!!!!!
+submission = pd.DataFrame({
+        "PassengerId": testing_set["PassengerId"],
+        "Survived": Y_pred
+    })
+submission.to_csv('submission.csv', index=False)
