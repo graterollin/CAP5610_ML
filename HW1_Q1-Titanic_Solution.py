@@ -131,7 +131,7 @@ print(training_set.head())
 print('\n')
 
 # Drop the name and passengerId from the training set...
-# And the name from the testing set (TODO: POSSIBLY REMOVE THE PASSENGER ID FROM THE TESTING SET)
+# And the name from the testing set
 training_set = training_set.drop(['Name', 'PassengerId'], axis=1)
 testing_set = testing_set.drop(['Name'], axis=1)
 combine = [training_set, testing_set]
@@ -222,7 +222,7 @@ combine = [training_set, testing_set]
 print(training_set.head())
 print('\n')
 
-# Creating an artifical feature combining PClass and Age (TODO: Not sure why we would do this or if it even helps)
+# Creating an artifical feature combining PClass and Age
 for dataset in combine:
     dataset['Age*Class'] = dataset.Age * dataset.Pclass
 
@@ -244,7 +244,7 @@ for dataset in combine:
 print(training_set.head())
 print('\n')
 
-# Completing the Fare attribute (TODO: WHY DO WE DO THIS FOR THE TEST SET?)
+# Completing the Fare attribute
 testing_set['Fare'].fillna(testing_set['Fare'].dropna().median(), inplace=True)
 print(testing_set.head())
 print('\n')
@@ -286,7 +286,7 @@ acc_log = round(logreg.score(X_train, Y_train) * 100, 2)
 print(acc_log)
 print('\n')
 
-# Modeling correlation (TODO: Note that this is different values)
+# Modeling correlation
 coeff_df = pd.DataFrame(training_set.columns.delete(0))
 coeff_df.columns = ['Feature']
 coeff_df["Correlation"] = pd.Series(logreg.coef_[0])
@@ -294,7 +294,7 @@ coeff_df["Correlation"] = pd.Series(logreg.coef_[0])
 print(coeff_df.sort_values(by='Correlation', ascending=False))
 print('\n')
 
-# Support Vector Machines (TODO: Note that this is a different value)
+# Support Vector Machines
 svc = SVC()
 svc.fit(X_train, Y_train)
 Y_pred = svc.predict(X_test)
@@ -362,7 +362,6 @@ random_forest.score(X_train, Y_train)
 acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
 print(acc_random_forest)
 print('\n')
-
 
 models = pd.DataFrame({
     'Model': ['Support Vector Machines', 'KNN', 'Logistic Regression', 
