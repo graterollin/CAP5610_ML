@@ -13,4 +13,4 @@ Contains the solution file for HW1 Q2 Part 2
 Contains the output of the most accurate model from Q2 Part 1: the Random Forest Classifier
 
 ## submission_improved.csv
-Contains the outpuit of the most accurate model from Q2 Part 2: the Random Forest Classifier
+Contains the output of the most accurate model from Q2 Part 2: the Random Forest Classifier
