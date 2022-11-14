@@ -4,13 +4,6 @@
 # 4031393
 # ----------------------------
 # Homework 3
-# ----------------------------
-import csv
-import pandas as pd
-import numpy as np
-import random as rnd
-#from scipy.special import logsumexp
-
 # QUESTION 1 
 # Construct the k-means algorithm from scratch
 
@@ -21,6 +14,13 @@ import random as rnd
 # labels.csv 
 # class label for all 10,000 points 
 # labels are from 0-9
+# ----------------------------
+import csv
+import pandas as pd
+import numpy as np
+import random as rnd
+import matplotlib.pyplot as plt
+#from scipy.special import logsumexp
 
 def retrieve_data_from_files(data_path, label_path):
     # Init lists that will hold our data 
@@ -146,13 +146,13 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
         sse_list.append(sse)
 
         print("Iteration:", iterations)
-
+        print("SSE List shape: ", len(sse_list))
         # return the final centers once they have converged (they do not change)
         print("TIME TO COMPARE:")
         print("New centers shape:", new_centers.shape)
         print("Old centers shape: ", centers.shape)
 
-        if (new_centers == centers):
+        if (new_centers.all() == centers.all()):
             return centers, iterations, sse_list
         # Else, keep iterating
         else:
@@ -160,14 +160,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
             centers = new_centers
             iterations += 1
 
-        # TODO: What if we return an empty list?
-        # return the final centers once they have converged
-        #if (centers_history.pop() == centers):
-        #    return centers
-
-        #centers_history.append(centers)
-
-    return sse_list
+    #return sse_list
 
 # This function computes new centroids based on given initial centers
 def compute_new_centroids(centers, dataset, similarity_type):
@@ -279,11 +272,15 @@ def main(similarity_measure):
 
     # TODO: Keep track of iterations to answer question 3
     # TODO: Compute accuracies 
-    sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
+    centers, iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
     # Number of items in the sse_list will tell us how many times it ran before converging
-    number_of_iterations = len(sse_list)
-
-    # TODO: Plot sse per iteration once code works
+    
+    #print("Number of iterations to converge: ", number_of_iterations)
+    
+    x = np.linspace(0, iterations, iterations)
+    
+    plt.scatter(x, sse_list)
+    plt.show()
 
     return None
 
