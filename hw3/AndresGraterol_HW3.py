@@ -142,7 +142,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
     iterations = 0
 
     while (1):
-        new_centers, sse = compute_new_centroids(centers, dataset, similarity_measure)
+        sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
         sse_list.append(sse)
 
         print("Iteration:", iterations)
