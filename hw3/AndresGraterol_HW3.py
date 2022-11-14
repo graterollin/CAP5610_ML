@@ -35,6 +35,7 @@ def retrieve_data_from_files(data_path, label_path):
     # Shape of data should be (10000,784)
     dataset = np.array(dataset)
     #print(dataset)
+    print("Shape of the dataset")
     print(dataset.shape)
 
     # Populate the labels 
@@ -44,6 +45,7 @@ def retrieve_data_from_files(data_path, label_path):
             labels.append(row)
 
     # Shape of labels should be (10000,)
+    print("Shape of the labels")
     labels = np.array(labels)
     labels = labels.squeeze()
     #print(labels)
@@ -51,17 +53,58 @@ def retrieve_data_from_files(data_path, label_path):
 
     return dataset, labels 
 
-def euclidean_similarity():
+def euclidean_similarity(centers, point):
+    similarity_array = []
+
+    # Compute the similarity between the point and all the clusters
+    for i in range(len(centers)):
+        # compare every feature for every cluster
+        distance_array = []
+        for j in centers[i]:
+            distance = (centers[i][j] - point[j])**2
+            distance_array.append(distance)
+        
+        sum_of_distances = sum(distance_array)
+        similarity = np.sqrt(sum_of_distances)
+        similarity_array.append(similarity)           
+
+    similarity_array = np.array(similarity_array)
+    # Shape goal: (10,)
+    # unless being called by SSE
+    print("Similarity array shape: ", similarity_array.shape)
+
+    return similarity_array
+
+def cosine_similarity(centers, dataset):
     return None
 
-def cosine_similarity():
+def jarcard_similarity(centers, dataset):
     return None
 
-def jarcard_similarity():
-    return None
+def compute_SSE(centers, dataset, membership_matrix):
+    SSE = []
 
-def compute_SSE(centers, dataset):
-    return None
+    # For each cluster
+    for i in range(len(centers)):
+        # Holds the sum for each cluster
+        running_sum = [] 
+        for j in range(len(dataset)):
+            # If the point we are looking is a member of the current cluster
+            if (membership_matrix[j][i] == 1):
+                # Compute the distance between the point and cluster (answer will be 1 int)
+                distance = euclidean_similarity(centers[i], dataset[j])
+                distance = distance.squeeze()
+                running_sum.append(distance)
+
+        cluster_sum = sum(running_sum)
+        SSE.append(cluster_sum)
+
+    # Sum the totals for each cluster
+    SSE_Total = sum(SSE)
+    SSE_Total = np.array(SSE_Total)
+
+    print("Final SSE value:", SSE_Total.shape)
+    return SSE_Total
 
 # This function computes the centroids and determines 
 # when to stop the algorithm
@@ -75,13 +118,14 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
 
     while (1):
         new_centers, SSE = compute_new_centroids(centers, dataset, similarity_measure)
+        SSE_list.append(SSE)
 
         # return the final centers once they have converged (they do not change)
         if (new_centers == centers):
             return centers, iterations, SSE_list
         # Else, keep iterating
         else:
-            SSE_list.append(SSE)
+            #SSE_list.append(SSE)
             centers = new_centers
             iterations += 1
 
@@ -92,7 +136,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
 
         #centers_history.append(centers)
 
-    return None
+    return SSE_list
 
 # This function computes new centroids based on given initial centers
 def compute_new_centroids(centers, dataset, similarity_measure):
@@ -110,7 +154,7 @@ def compute_new_centroids(centers, dataset, similarity_measure):
 
         # Determine similarity to all the centers based on the metric  
         if (similarity_measure == 'Euclidean'):
-            similarity_array = euclidean_similarity()
+            similarity_array = euclidean_similarity(centers, point)
 
         elif (similarity_measure == 'Cosine'):
             similarity_array = cosine_similarity()
@@ -193,7 +237,12 @@ def main(similarity_measure):
     print(initial_centers.shape)
 
     # TODO: Keep track of iterations to answer question 3
-    #SSE_list = 
+    # TODO: Compute accuracies 
+    SSE_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
+    # Number of items in the SSE_list will tell us how many times it ran before converging
+    number_of_iterations = len(SSE_list)
+
+    # TODO: Plot SSE per iteration once code works
 
     return None
 
