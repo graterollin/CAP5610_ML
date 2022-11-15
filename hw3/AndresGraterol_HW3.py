@@ -22,6 +22,7 @@ import random as rnd
 import matplotlib.pyplot as plt
 #from scipy.special import logsumexp
 
+# TODO: LOOK AT KMEANS.PY
 # TODO: ASK FOR AN EXTENSION ON THE HOMEWORK!!!!!!
 # TODO: DECLUTTER THE CODE! REMOVE COMMENTS THAT WE KNOW FOR SURE ALREADY WORK!!!!!!!!!!!
 # TODO: Possibly refactor the code for the membership matrix to get away from one-hot encoding mess
