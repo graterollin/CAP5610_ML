@@ -24,7 +24,10 @@ import matplotlib.pyplot as plt
 
 # TODO: Take a look at below! ALSO LOOK FOR OTHER SCIKIT LEARN LIBRARIES THAT CAN HELP
 #       FOR EXAMPLE, SIMILARITY HELP!!!
+# Distance metric:
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.DistanceMetric.html
+# Cosine similarity: 
+# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html
 # TODO: LOOK AT KMEANS.PY
 # TODO: ASK FOR AN EXTENSION ON THE HOMEWORK!!!!!!
 # TODO: DECLUTTER THE CODE! REMOVE COMMENTS THAT WE KNOW FOR SURE ALREADY WORK!!!!!!!!!!!
