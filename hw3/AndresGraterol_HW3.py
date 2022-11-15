@@ -129,6 +129,7 @@ def compute_sse(centers, dataset, membership_matrix):
             # If the point we are looking is a member of the current cluster
             if (membership_matrix[j][i] == 1):
                 # Compute the distance between the point and cluster (answer will be 1 int)
+                # TODO: Change this to sklearn distance metric
                 distance = sse_distance_helper(centers[i], dataset[j])
                 distance = distance.squeeze()
                 running_sum.append(distance)
@@ -193,9 +194,11 @@ def compute_new_centroids(centers, dataset, similarity_type):
 
         # Determine similarity to all the centers based on the metric  
         if (similarity_type == 'Euclidean'):
+            # TODO: Change this to sklearn distance metric 
             similarity_array = euclidean_similarity(centers, dataset[point])
 
         elif (similarity_type == 'Cosine'):
+            # TODO: Use the sklearn library!
             similarity_array = cosine_similarity()
 
         elif (similarity_type == 'Jarcard'):
