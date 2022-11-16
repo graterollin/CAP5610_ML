@@ -20,6 +20,7 @@ import pandas as pd
 import numpy as np
 import random as rnd
 import matplotlib.pyplot as plt
+import sklearn.metrics
 #from scipy.special import logsumexp
 
 # TODO: Take a look at below! ALSO LOOK FOR OTHER SCIKIT LEARN LIBRARIES THAT CAN HELP
@@ -28,9 +29,9 @@ import matplotlib.pyplot as plt
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.DistanceMetric.html
 # Cosine similarity: 
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html
-# TODO: LOOK AT KMEANS.PY
+# jarcard similarity:
+# https://scikit-learn.org/0.15/modules/generated/sklearn.metrics.jaccard_similarity_score.html
 # TODO: ASK FOR AN EXTENSION ON THE HOMEWORK!!!!!!
-# TODO: DECLUTTER THE CODE! REMOVE COMMENTS THAT WE KNOW FOR SURE ALREADY WORK!!!!!!!!!!!
 # TODO: Possibly refactor the code for the membership matrix to get away from one-hot encoding mess
 # TODO: SEE IF YOU CAN MANIPULATE THE DATA TO BE OF SHAPE (10000, 2 for example)
 
@@ -68,7 +69,7 @@ def retrieve_data_from_files(data_path, label_path):
 
     return dataset, labels 
 
-def euclidean_similarity(centers, point):
+#def euclidean_similarity(centers, point):
     similarity_array = []
 
     # Compute the similarity between the point and all the clusters
@@ -154,6 +155,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
 
     iterations = 0
 
+    # TODO: Look at the kmeans.py example!
     while (1):
         sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
         sse_list.append(sse)
@@ -243,7 +245,6 @@ def compute_new_centroids(centers, dataset, similarity_type):
 
     # 10 rows (one for each cluster)
     # 784 columns 
-    # Shape: (10, 784)
     # TODO: Check if this is initiated right 
     sum_per_cluster = np.zeros((10, 784))
 
@@ -285,8 +286,6 @@ def main(similarity_measure):
     # Pick random centers from the dataset to start the algorithm 
     initial_centers = rnd.choices(dataset, k=10)
     initial_centers = np.array(initial_centers)
-    #print("Shape of the initial centers:")
-    #print(initial_centers.shape)
 
     # TODO: Keep track of iterations to answer question 3
     # TODO: Compute accuracies 
