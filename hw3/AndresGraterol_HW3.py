@@ -58,7 +58,8 @@ def retrieve_data_from_files(data_path, label_path):
 
     return dataset, labels 
 
-def euclidean_similarity(centers, point, similarity_type):
+# Compute similarity based on the type
+def compute_similarity(centers, point, similarity_type):
     similarity_array = []
 
     # Compute the similarity between the point and all the clusters
@@ -71,12 +72,6 @@ def euclidean_similarity(centers, point, similarity_type):
     similarity_array = similarity_array.squeeze()
 
     return similarity_array
-
-def cosine_similarity(centers, dataset):
-    return None
-
-def jarcard_similarity(centers, dataset):
-    return None
 
 def compute_sse(centers, dataset, membership_matrix):
     sse = []
@@ -118,20 +113,11 @@ def compute_new_centroids(centers, dataset, similarity_type):
         # Create one-hot encoding cluster membership for each point 
         membership_array = np.zeros(10)
 
-        # TODO: CONDENSE THESE AND JUST KEEP INVALID CHECK
         # Determine similarity to all the centers based on the metric  
-        if (similarity_type == 'euclidean'):
-            similarity_array = euclidean_similarity(centers, dataset[point], similarity_type)
-
-        elif (similarity_type == 'cosine'):
-            # TODO: Use the sklearn library!
-            similarity_array = cosine_similarity()
-
-        elif (similarity_type == 'jarcard'):
-            similarity_array = jarcard_similarity()
-
-        else:
+        if (similarity_type != 'euclidean' and similarity_type != 'cosine' and similarity_type != 'jarcard'):
             raise ValueError("Similarity measure is one that is not supported")
+
+        similarity_array = compute_similarity(centers, dataset[point], similarity_type)
 
         # Determine the smallest number in the similarity array 
         # to determine cluster membership
@@ -190,7 +176,6 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
 
     iterations = 0
 
-    # TODO: Look at the kmeans.py example!
     while (1):
         print("Iteration:", iterations)
         sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
@@ -199,7 +184,6 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
         #centers_compared = centers.round(2)
         #new_centers_compared = centers.round(2)
 
-        # TODO: Maybe round the centers??
         #if (new_centers.all() == centers.all()):
         #if(np.array_equal(new_centers, centers)):
         #if(np.allclose(new_centers_compared, centers_compared)):
@@ -222,16 +206,12 @@ def main(similarity_measure):
     labels_path = 'kmeans_data/label.csv'
 
     dataset, labels = retrieve_data_from_files(data_path, labels_path)
-    
-    #dataset = dataset[:20]
 
     # Pick random centers from the dataset to start the algorithm 
     initial_centers = rnd.choices(dataset, k=10)
     initial_centers = np.array(initial_centers)
 
-    print(initial_centers)
-    # TODO: Keep track of iterations to answer question 3
-    # TODO: Compute accuracies 
+    #print(initial_centers)
     centers, iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
 
     print("ALGORITHM FINISHED")
