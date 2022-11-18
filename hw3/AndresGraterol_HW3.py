@@ -20,9 +20,7 @@ import pandas as pd
 import numpy as np
 import random as rnd
 import matplotlib.pyplot as plt
-#import sklearn.metrics
 import scipy.spatial as ss
-#from scipy.special import logsumexp
 
 def retrieve_data_from_files(data_path, label_path):
     # Init lists that will hold our data 
@@ -66,6 +64,11 @@ def label_clusters(labels, membership_matrix):
         for j in range(len(labels)):
             if (membership_matrix[j][i] == 1):
                 labels_per_cluster.append(labels[j])
+
+        # Check if this list is empty
+        if not labels_per_cluster:
+            # If so assign a label of 0 to the cluster
+            labels_per_cluster.append(0)
 
         labels_per_cluster = np.array(labels_per_cluster)
         u, indices = np.unique(labels_per_cluster, return_inverse=True)
@@ -169,7 +172,7 @@ def compute_new_centroids(centers, dataset, labels, similarity_type):
 
     # Compute accuracies
     accuracy = compute_accuracy(dataset, labels, cluster_labels, membership_matrix)
-    print("Accuracy: ", accuracy)
+    print("Accuracy: ", round(accuracy*100, 2))
 
     # Compute sse for these centers and all the points 
     sse = compute_sse(centers, dataset, membership_matrix)
@@ -275,7 +278,9 @@ def main(similarity_measure, stop_criteria):
 
     print("ALGORITHM FINISHED")
     print("Final Number of iterations:", iterations)
-    print("Final Accuracy:", accuracy)
+    print("Final Accuracy:", round(accuracy*100, 2))
+    print("Initial SSE: ", sse_list[0])
+    print("Final SSE: ", sse_list[-1])
 
     # Plot the SSE behavior
     x = np.linspace(0, iterations+1, iterations+1)
@@ -287,13 +292,13 @@ def main(similarity_measure, stop_criteria):
 # The three different similarity measures that we will be using for this problem 
 euclidean_similarity_string = 'euclidean'
 cosine_similarity_string = 'cosine'
-jarcard_similarity_string = 'jaccard'
+jaccard_similarity_string = 'jaccard'
 
 # The three different stopping criteria
 centroid_stop_criteria = 'centroid'
 sse_value_increase_criteria = 'sse'
 preset_iteration_criteria = 'iteration'
 
-main(euclidean_similarity_string, centroid_stop_criteria)
+main(jaccard_similarity_string, centroid_stop_criteria)
 #main(cosine_similarity_string)
-#main(jarcard_similarity_string)
+#main(jaccard_similarity_string)
