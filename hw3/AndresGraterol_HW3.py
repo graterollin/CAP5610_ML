@@ -20,20 +20,9 @@ import pandas as pd
 import numpy as np
 import random as rnd
 import matplotlib.pyplot as plt
-import sklearn.metrics
+#import sklearn.metrics
+import scipy.spatial as ss
 #from scipy.special import logsumexp
-
-# TODO: Take a look at below! ALSO LOOK FOR OTHER SCIKIT LEARN LIBRARIES THAT CAN HELP
-#       FOR EXAMPLE, SIMILARITY HELP!!!
-# Distance metric:
-# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.DistanceMetric.html
-# Cosine similarity: 
-# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.cosine_similarity.html
-# jarcard similarity:
-# https://scikit-learn.org/0.15/modules/generated/sklearn.metrics.jaccard_similarity_score.html
-# TODO: ASK FOR AN EXTENSION ON THE HOMEWORK!!!!!!
-# TODO: Possibly refactor the code for the membership matrix to get away from one-hot encoding mess
-# TODO: SEE IF YOU CAN MANIPULATE THE DATA TO BE OF SHAPE (10000, 2 for example)
 
 def retrieve_data_from_files(data_path, label_path):
     # Init lists that will hold our data 
@@ -69,29 +58,17 @@ def retrieve_data_from_files(data_path, label_path):
 
     return dataset, labels 
 
-#def euclidean_similarity(centers, point):
+def euclidean_similarity(centers, point, similarity_type):
     similarity_array = []
 
     # Compute the similarity between the point and all the clusters
-    #print("Want this to be 10: ")
-    #print(len(centers))
-    #print("Want this to be 784:")
-    #print(len(centers[0]))
     for i in range(len(centers)):
-        # compare every feature for every cluster
-        distance_array = []
-        for j in range(len(centers[i])):
-            #print("Feature #: ", j)
-            distance = (centers[i][j] - point[j])**2
-            distance_array.append(distance)
-        
-        sum_of_distances = sum(distance_array)
-        similarity = np.sqrt(sum_of_distances)
-        similarity_array.append(similarity)           
+        distance = ss.distance.cdist(np.expand_dims(centers[i], axis=0), np.expand_dims(point, axis=0), similarity_type)
+        distance = distance.squeeze()
+        similarity_array.append(distance)    
 
     similarity_array = np.array(similarity_array)
-    # Shape goal: (10,)
-    #print("Similarity array shape: ", similarity_array.shape)
+    similarity_array = similarity_array.squeeze()
 
     return similarity_array
 
@@ -102,7 +79,7 @@ def jarcard_similarity(centers, dataset):
     return None
 
 # Computes distance to only one center
-def sse_distance_helper(center, point):
+#def sse_distance_helper(center, point):
     distance_array = []
 
     # Loop through the features 
@@ -130,8 +107,8 @@ def compute_sse(centers, dataset, membership_matrix):
             # If the point we are looking is a member of the current cluster
             if (membership_matrix[j][i] == 1):
                 # Compute the distance between the point and cluster (answer will be 1 int)
-                # TODO: Change this to sklearn distance metric
-                distance = sse_distance_helper(centers[i], dataset[j])
+                distance = ss.distance.cdist(np.expand_dims(centers[i], axis=0), np.expand_dims(dataset[j], axis=0), 'euclidean')
+                #distance = sse_distance_helper(centers[i], dataset[j])
                 distance = distance.squeeze()
                 running_sum.append(distance)
 
@@ -141,42 +118,10 @@ def compute_sse(centers, dataset, membership_matrix):
     # Sum the totals for each cluster
     sse_Total = sum(sse)
     sse_Total = np.array(sse_Total)
+    print("Shape of sse total: ", sse_Total.shape)
 
-    #print("Final sse value:", sse_Total)
+    print("Final sse value:", sse_Total)
     return sse_Total
-
-# This function computes the centroids and determines 
-# when to stop the algorithm
-# TODO: Keep track of sse listing here as well
-def kmeans_algorithm(centers, dataset, similarity_measure):
-    #new_centers = []
-    #centers_history = []
-    sse_list = []
-
-    iterations = 0
-
-    # TODO: Look at the kmeans.py example!
-    while (1):
-        sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
-        sse_list.append(sse)
-
-        print("Iteration:", iterations)
-        #print("SSE List shape: ", len(sse_list))
-        # return the final centers once they have converged (they do not change)
-        #print("TIME TO COMPARE:")
-        #print("New centers shape:", new_centers.shape)
-        #print("Old centers shape: ", centers.shape)
-
-        if (new_centers.all() == centers.all()):
-            print("Converged!")
-            return centers, iterations, sse_list
-        # Else, keep iterating
-        else:
-            #sse_list.append(sse)
-            centers = new_centers
-            iterations += 1
-
-    #return sse_list
 
 # This function computes new centroids based on given initial centers
 def compute_new_centroids(centers, dataset, similarity_type):
@@ -194,16 +139,16 @@ def compute_new_centroids(centers, dataset, similarity_type):
         # Create one-hot encoding cluster membership for each point 
         membership_array = np.zeros(10)
 
+        # TODO: CONDENSE THESE AND JUST KEEP INVALID CHECK
         # Determine similarity to all the centers based on the metric  
-        if (similarity_type == 'Euclidean'):
-            # TODO: Change this to sklearn distance metric 
-            similarity_array = euclidean_similarity(centers, dataset[point])
+        if (similarity_type == 'euclidean'):
+            similarity_array = euclidean_similarity(centers, dataset[point], similarity_type)
 
-        elif (similarity_type == 'Cosine'):
+        elif (similarity_type == 'cosine'):
             # TODO: Use the sklearn library!
             similarity_array = cosine_similarity()
 
-        elif (similarity_type == 'Jarcard'):
+        elif (similarity_type == 'jarcard'):
             similarity_array = jarcard_similarity()
 
         else:
@@ -215,10 +160,11 @@ def compute_new_centroids(centers, dataset, similarity_type):
 
         min_sim = similarity_array[0]
         index = 0
+        cluster_member = 0
         for sim in range(len(similarity_array)):
             
             if (similarity_array[sim] < min_sim):
-                min_sim = sim
+                min_sim = similarity_array[sim]
                 cluster_member = index
 
             index += 1
@@ -227,21 +173,16 @@ def compute_new_centroids(centers, dataset, similarity_type):
         membership_array[cluster_member] = 1 
         membership_matrix.append(membership_array)
 
-    #print("Final membership matrix:", membership_matrix)
-    # TODO: Compute sse, create function
+    #print("Membership matrix:", membership_matrix)
+
     # Compute sse for these centers and all the points 
     sse = compute_sse(centers, dataset, membership_matrix)
 
     # Compute the new centers
     # Get the total count in each cluster 
     cluster_totals = [sum(x) for x in zip(*membership_matrix)]
-    cluster_totals = np.array(cluster_totals)
-
     # Expect shape: (10,)
-    #print("Number per cluster shape:")
-    #print(cluster_totals.shape)
-    #print("Number per cluster:")
-    #print(cluster_totals)
+    cluster_totals = np.array(cluster_totals)
 
     # 10 rows (one for each cluster)
     # 784 columns 
@@ -269,13 +210,50 @@ def compute_new_centroids(centers, dataset, similarity_type):
     
     #print("Shape of new centers:")
     #print(new_centers.shape)
+    #print("New centers: ", new_centers)
 
     return sse, new_centers
+
+# This function computes the centroids and determines 
+# when to stop the algorithm
+def kmeans_algorithm(centers, dataset, similarity_measure):
+    #new_centers = []
+    #centers_history = []
+    sse_list = []
+
+    iterations = 0
+
+    # TODO: Look at the kmeans.py example!
+    while (1):
+        print("Iteration:", iterations)
+        sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
+        sse_list.append(sse)
+
+        #print("SSE List shape: ", len(sse_list))
+        # return the final centers once they have converged (they do not change)
+        #print("TIME TO COMPARE:")
+        #print("New centers shape:", new_centers.shape)
+        #print("Old centers shape: ", centers.shape)
+
+        #if (new_centers.all() == centers.all()):
+        #if(np.array_equal(new_centers, centers)):
+        if(np.allclose(new_centers, centers)):
+            print("Converged!")
+            return centers, iterations, sse_list
+        # Else, keep iterating
+        else:
+            #sse_list.append(sse)
+            centers = new_centers
+            iterations += 1
+
+    #return sse_list
 
 # Specify K = the number of categorical values of y 
 # (The number of classifications; 10 labels)
 # Data exists in 784 dimensions 
 def main(similarity_measure):
+
+    print("Let's begin")
     data_path = 'kmeans_data/data.csv'
     labels_path = 'kmeans_data/label.csv'
 
@@ -287,10 +265,11 @@ def main(similarity_measure):
     initial_centers = rnd.choices(dataset, k=10)
     initial_centers = np.array(initial_centers)
 
+    print(initial_centers)
     # TODO: Keep track of iterations to answer question 3
     # TODO: Compute accuracies 
     centers, iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
-    # Number of items in the sse_list will tell us how many times it ran before converging
+
     
     print("ALGORITHM FINISHED")
     print("Final Number of iterations:", iterations)
@@ -305,9 +284,9 @@ def main(similarity_measure):
     return None
 
 # The three different similarity measures that we will be using for this problem 
-euclidean_similarity_string = 'Euclidean'
-cosine_similarity_string = 'Cosine'
-jarcard_similarity_string = 'Jarcard'
+euclidean_similarity_string = 'euclidean'
+cosine_similarity_string = 'cosine'
+jarcard_similarity_string = 'jarcard'
 
 main(euclidean_similarity_string)
 #main(cosine_similarity_string)
