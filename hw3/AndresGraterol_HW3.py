@@ -78,24 +78,6 @@ def cosine_similarity(centers, dataset):
 def jarcard_similarity(centers, dataset):
     return None
 
-# Computes distance to only one center
-#def sse_distance_helper(center, point):
-    distance_array = []
-
-    # Loop through the features 
-    for i in range(len(center)):
-        distance = (center[i] - point[i])**2
-        distance_array.append(distance)
-
-    sum_of_distances = sum(distance_array)
-    final_distance = np.sqrt(sum_of_distances)
-
-    #print("Distance for point: ", final_distance)
-    #print("Expecting 1 here: ")
-    #print(final_distance.shape)
-
-    return final_distance
-
 def compute_sse(centers, dataset, membership_matrix):
     sse = []
 
@@ -108,7 +90,6 @@ def compute_sse(centers, dataset, membership_matrix):
             if (membership_matrix[j][i] == 1):
                 # Compute the distance between the point and cluster (answer will be 1 int)
                 distance = ss.distance.cdist(np.expand_dims(centers[i], axis=0), np.expand_dims(dataset[j], axis=0), 'euclidean')
-                #distance = sse_distance_helper(centers[i], dataset[j])
                 distance = distance.squeeze()
                 running_sum.append(distance)
 
@@ -132,8 +113,6 @@ def compute_new_centroids(centers, dataset, similarity_type):
     # For every point in the dataset 
     for point in range(len(dataset)):
         # Create array to store similarity to each centroid
-        #print("point # :", point)
-
         similarity_array = []
 
         # Create one-hot encoding cluster membership for each point 
@@ -156,8 +135,6 @@ def compute_new_centroids(centers, dataset, similarity_type):
 
         # Determine the smallest number in the similarity array 
         # to determine cluster membership
-        #print("Similarity array:", similarity_array)
-
         min_sim = similarity_array[0]
         index = 0
         cluster_member = 0
@@ -173,8 +150,6 @@ def compute_new_centroids(centers, dataset, similarity_type):
         membership_array[cluster_member] = 1 
         membership_matrix.append(membership_array)
 
-    #print("Membership matrix:", membership_matrix)
-
     # Compute sse for these centers and all the points 
     sse = compute_sse(centers, dataset, membership_matrix)
 
@@ -184,9 +159,6 @@ def compute_new_centroids(centers, dataset, similarity_type):
     # Expect shape: (10,)
     cluster_totals = np.array(cluster_totals)
 
-    # 10 rows (one for each cluster)
-    # 784 columns 
-    # TODO: Check if this is initiated right 
     sum_per_cluster = np.zeros((10, 784))
 
     # Get the sum for each cluster
@@ -202,15 +174,10 @@ def compute_new_centroids(centers, dataset, similarity_type):
     #print("Sum per cluster shape:", sum_per_cluster.shape)
     new_centers = np.zeros((10, 784))
 
-    # TODO: DEBUG HERE, THE NEW CENTERS ARE NOT UPDATING!!!!
     # Divide each cluster row by the number of points in each cluster 
     for i in range(10):
         if (cluster_totals[i] != 0):
             new_centers[i] = [x / cluster_totals[i] for x in sum_per_cluster[i]] 
-    
-    #print("Shape of new centers:")
-    #print(new_centers.shape)
-    #print("New centers: ", new_centers)
 
     return sse, new_centers
 
@@ -229,14 +196,13 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
         sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
         sse_list.append(sse)
 
-        #print("SSE List shape: ", len(sse_list))
-        # return the final centers once they have converged (they do not change)
-        #print("TIME TO COMPARE:")
-        #print("New centers shape:", new_centers.shape)
-        #print("Old centers shape: ", centers.shape)
+        #centers_compared = centers.round(2)
+        #new_centers_compared = centers.round(2)
 
+        # TODO: Maybe round the centers??
         #if (new_centers.all() == centers.all()):
         #if(np.array_equal(new_centers, centers)):
+        #if(np.allclose(new_centers_compared, centers_compared)):
         if(np.allclose(new_centers, centers)):
             print("Converged!")
             return centers, iterations, sse_list
@@ -245,8 +211,6 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
             #sse_list.append(sse)
             centers = new_centers
             iterations += 1
-
-    #return sse_list
 
 # Specify K = the number of categorical values of y 
 # (The number of classifications; 10 labels)
@@ -270,7 +234,6 @@ def main(similarity_measure):
     # TODO: Compute accuracies 
     centers, iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
 
-    
     print("ALGORITHM FINISHED")
     print("Final Number of iterations:", iterations)
     print("Final Shape of centers: ", centers.shape)
