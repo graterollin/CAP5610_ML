@@ -94,9 +94,8 @@ def compute_sse(centers, dataset, membership_matrix):
     # Sum the totals for each cluster
     sse_Total = sum(sse)
     sse_Total = np.array(sse_Total)
-    print("Shape of sse total: ", sse_Total.shape)
 
-    print("Final sse value:", sse_Total)
+    print("SSE value:", sse_Total)
     return sse_Total
 
 # This function computes new centroids based on given initial centers
@@ -169,9 +168,7 @@ def compute_new_centroids(centers, dataset, similarity_type):
 
 # This function computes the centroids and determines 
 # when to stop the algorithm
-def kmeans_algorithm(centers, dataset, similarity_measure):
-    #new_centers = []
-    #centers_history = []
+def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
     sse_list = []
 
     iterations = 0
@@ -179,27 +176,55 @@ def kmeans_algorithm(centers, dataset, similarity_measure):
     while (1):
         print("Iteration:", iterations)
         sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
-        sse_list.append(sse)
+        #sse_list.append(sse)
 
-        #centers_compared = centers.round(2)
-        #new_centers_compared = centers.round(2)
+        if (stop_criteria == 'centroid'):
+            #centers_compared = centers.round(2)
+            #new_centers_compared = centers.round(2)
 
-        #if (new_centers.all() == centers.all()):
-        #if(np.array_equal(new_centers, centers)):
-        #if(np.allclose(new_centers_compared, centers_compared)):
-        if(np.allclose(new_centers, centers)):
-            print("Converged!")
-            return centers, iterations, sse_list
-        # Else, keep iterating
+            #if (new_centers.all() == centers.all()):
+            #if(np.array_equal(new_centers, centers)):
+            #if(np.allclose(new_centers_compared, centers_compared)):
+            if(np.allclose(new_centers, centers)):
+                print("Converged!")
+                sse_list.append(sse)
+                return iterations, sse_list
+            # Else, keep iterating
+            else:
+                #sse_list.append(sse)
+                centers = new_centers
+                iterations += 1
+                sse_list.append(sse)
+        
+        elif (stop_criteria == 'sse'):
+            if (sse > sse_list[-1]):
+                print("SSE is now greater")
+                sse_list.append(sse)
+                return iterations, sse_list
+            else:
+                centers = new_centers
+                iterations += 1
+                sse_list.append(sse)
+
+        elif (stop_criteria == 'iteration'):
+            if (iterations == 100):
+                print("Reached max preset value")
+                sse_list.append(sse)
+                return iterations, sse_list
+            else:
+                centers = new_centers
+                iterations += 1
+                sse_list.append(sse)
+        
         else:
-            #sse_list.append(sse)
-            centers = new_centers
-            iterations += 1
+            raise ValueError("Invalid choice of stop criteria")
+
+     
 
 # Specify K = the number of categorical values of y 
 # (The number of classifications; 10 labels)
 # Data exists in 784 dimensions 
-def main(similarity_measure):
+def main(similarity_measure, stop_criteria):
 
     print("Let's begin")
     data_path = 'kmeans_data/data.csv'
@@ -212,15 +237,13 @@ def main(similarity_measure):
     initial_centers = np.array(initial_centers)
 
     #print(initial_centers)
-    centers, iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure)
+    iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure, stop_criteria)
 
     print("ALGORITHM FINISHED")
     print("Final Number of iterations:", iterations)
-    print("Final Shape of centers: ", centers.shape)
-    print("Length of sse_list:", len(sse_list))
-    
+
+    # Plot the SSE behavior
     x = np.linspace(0, iterations+1, iterations+1)
-    
     plt.scatter(x, sse_list)
     plt.show()
 
@@ -229,7 +252,12 @@ def main(similarity_measure):
 # The three different similarity measures that we will be using for this problem 
 euclidean_similarity_string = 'euclidean'
 cosine_similarity_string = 'cosine'
-jarcard_similarity_string = 'jarcard'
+jarcard_similarity_string = 'jaccard'
+
+# The three different stopping criteria
+centroid_stop_criteria = 'centroid'
+sse_value_increase_criteria = 'sse'
+preset_iteration_criteria = 'iteration'
 
 main(euclidean_similarity_string)
 #main(cosine_similarity_string)
