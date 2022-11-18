@@ -58,6 +58,35 @@ def retrieve_data_from_files(data_path, label_path):
 
     return dataset, labels 
 
+def label_clusters(labels, membership_matrix):
+    cluster_labels = []
+
+    for i in range(10):
+        labels_per_cluster = []
+        for j in range(len(labels)):
+            if (membership_matrix[j][i] == 1):
+                labels_per_cluster.append(labels[j])
+
+        labels_per_cluster = np.array(labels_per_cluster)
+        u, indices = np.unique(labels_per_cluster, return_inverse=True)
+        cluster_labels.append(u[np.argmax(np.bincount(indices))])
+
+    return cluster_labels
+
+def compute_accuracy(dataset, labels, cluster_labels, membership_matrix):
+    accuracy = 0
+
+    for i in range(10):
+        for j in range(len(dataset)):
+            if (membership_matrix[j][i] == 1):
+                if(cluster_labels[i] == labels[j]):
+                    accuracy += 1
+
+    # Number of correct predictions / number of items in dataset
+    accuracy = accuracy / (len(dataset))
+
+    return accuracy
+
 # Compute similarity based on the type
 def compute_similarity(centers, point, similarity_type):
     similarity_array = []
@@ -99,7 +128,7 @@ def compute_sse(centers, dataset, membership_matrix):
     return sse_Total
 
 # This function computes new centroids based on given initial centers
-def compute_new_centroids(centers, dataset, similarity_type):
+def compute_new_centroids(centers, dataset, labels, similarity_type):
     
     # Create 2D one-hot encoding array for cluster membership
     membership_matrix = [] 
@@ -113,7 +142,7 @@ def compute_new_centroids(centers, dataset, similarity_type):
         membership_array = np.zeros(10)
 
         # Determine similarity to all the centers based on the metric  
-        if (similarity_type != 'euclidean' and similarity_type != 'cosine' and similarity_type != 'jarcard'):
+        if (similarity_type != 'euclidean' and similarity_type != 'cosine' and similarity_type != 'jaccard'):
             raise ValueError("Similarity measure is one that is not supported")
 
         similarity_array = compute_similarity(centers, dataset[point], similarity_type)
@@ -134,6 +163,13 @@ def compute_new_centroids(centers, dataset, similarity_type):
         # Place a '1' to relating to the centroid we are assigning the point to
         membership_array[cluster_member] = 1 
         membership_matrix.append(membership_array)
+
+    # Assign each cluster to a label
+    cluster_labels = label_clusters(labels, membership_matrix)
+
+    # Compute accuracies
+    accuracy = compute_accuracy(dataset, labels, cluster_labels, membership_matrix)
+    print("Accuracy: ", accuracy)
 
     # Compute sse for these centers and all the points 
     sse = compute_sse(centers, dataset, membership_matrix)
@@ -164,18 +200,18 @@ def compute_new_centroids(centers, dataset, similarity_type):
         if (cluster_totals[i] != 0):
             new_centers[i] = [x / cluster_totals[i] for x in sum_per_cluster[i]] 
 
-    return sse, new_centers
+    return sse, new_centers, accuracy
 
 # This function computes the centroids and determines 
 # when to stop the algorithm
-def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
+def kmeans_algorithm(centers, dataset, labels, similarity_measure, stop_criteria):
     sse_list = []
 
     iterations = 0
 
     while (1):
         print("Iteration:", iterations)
-        sse, new_centers = compute_new_centroids(centers, dataset, similarity_measure)
+        sse, new_centers, accuracy = compute_new_centroids(centers, dataset, labels, similarity_measure)
         #sse_list.append(sse)
 
         if (stop_criteria == 'centroid'):
@@ -188,7 +224,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
             if(np.allclose(new_centers, centers)):
                 print("Converged!")
                 sse_list.append(sse)
-                return iterations, sse_list
+                return iterations, sse_list, accuracy
             # Else, keep iterating
             else:
                 #sse_list.append(sse)
@@ -200,7 +236,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
             if (sse > sse_list[-1]):
                 print("SSE is now greater")
                 sse_list.append(sse)
-                return iterations, sse_list
+                return iterations, sse_list, accuracy
             else:
                 centers = new_centers
                 iterations += 1
@@ -210,7 +246,7 @@ def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
             if (iterations == 100):
                 print("Reached max preset value")
                 sse_list.append(sse)
-                return iterations, sse_list
+                return iterations, sse_list, accuracy
             else:
                 centers = new_centers
                 iterations += 1
@@ -218,8 +254,6 @@ def kmeans_algorithm(centers, dataset, similarity_measure, stop_criteria):
         
         else:
             raise ValueError("Invalid choice of stop criteria")
-
-     
 
 # Specify K = the number of categorical values of y 
 # (The number of classifications; 10 labels)
@@ -237,10 +271,11 @@ def main(similarity_measure, stop_criteria):
     initial_centers = np.array(initial_centers)
 
     #print(initial_centers)
-    iterations, sse_list = kmeans_algorithm(initial_centers, dataset, similarity_measure, stop_criteria)
+    iterations, sse_list, accuracy = kmeans_algorithm(initial_centers, dataset, labels, similarity_measure, stop_criteria)
 
     print("ALGORITHM FINISHED")
     print("Final Number of iterations:", iterations)
+    print("Final Accuracy:", accuracy)
 
     # Plot the SSE behavior
     x = np.linspace(0, iterations+1, iterations+1)
@@ -259,6 +294,6 @@ centroid_stop_criteria = 'centroid'
 sse_value_increase_criteria = 'sse'
 preset_iteration_criteria = 'iteration'
 
-main(euclidean_similarity_string)
+main(euclidean_similarity_string, centroid_stop_criteria)
 #main(cosine_similarity_string)
 #main(jarcard_similarity_string)
