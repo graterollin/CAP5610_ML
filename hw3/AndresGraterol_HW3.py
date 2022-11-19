@@ -236,10 +236,15 @@ def kmeans_algorithm(centers, dataset, labels, similarity_measure, stop_criteria
                 sse_list.append(sse)
         
         elif (stop_criteria == 'sse'):
-            if (sse > sse_list[-1]):
-                print("SSE is now greater")
-                sse_list.append(sse)
-                return iterations, sse_list, accuracy
+            if (iterations != 0):
+                if (sse > sse_list[-1]):
+                    print("SSE is now greater")
+                    sse_list.append(sse)
+                    return iterations, sse_list, accuracy
+                else:
+                    centers = new_centers
+                    iterations += 1
+                    sse_list.append(sse)
             else:
                 centers = new_centers
                 iterations += 1
@@ -299,6 +304,4 @@ centroid_stop_criteria = 'centroid'
 sse_value_increase_criteria = 'sse'
 preset_iteration_criteria = 'iteration'
 
-main(jaccard_similarity_string, centroid_stop_criteria)
-#main(cosine_similarity_string)
-#main(jaccard_similarity_string)
+main(cosine_similarity_string, preset_iteration_criteria)
