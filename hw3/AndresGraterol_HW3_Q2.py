@@ -27,19 +27,19 @@ PMF = SVD(biased=False)
 # 5 K-Folds are used by default as well
 #cross_validate(algo=PMF, data=data, verbose=True)
 
-# User-Based Collaborative Clustering 
+# User-Based Collaborative Filtering 
 # -----------------------------------------------------
 user_based = {
     "name": "cosine",
     "user_based": True,
 }
 
-# By default 40 clusters are used
+# By default 40 neighbors are used
 userBased_filtering = KNNBasic(k=60, sim_options=user_based)
 
 #cross_validate(algo=userBased_filtering, data=data, verbose=True)
 
-# Item-Based Collaborative Clustering 
+# Item-Based Collaborative Filtering 
 # -----------------------------------------------------
 item_based = {
     "name": "msd",
@@ -50,7 +50,7 @@ itemBased_filtering = KNNBasic(k=60, sim_options=item_based)
 
 #cross_validate(algo=itemBased_filtering, data=data, verbose=True)
 
-# Plot the data for similarity/cluster comparison 
+# Plot the data for similarity/neighbor comparison 
 # -----------------------------------------------------
 sim_values = ['MSD', 'Cosine', 'Pearson']
 user_rmse_data = [1.0078, 0.9935, 0.9983]
@@ -81,30 +81,30 @@ plt.title("Item Based Collaborative Filtering")
 plt.legend()
 plt.show()
 
-cluster_numbers = ['20', '40', '60']
-userCluster_rmse_data = [0.9980, 0.9935, 0.9950]
-userCluster_mae_data = [0.7698, 0.7675, 0.7696]
+neighbor_numbers = ['20', '40', '60']
+userNeighbor_rmse_data = [0.9980, 0.9935, 0.9950]
+userNeighbor_mae_data = [0.7698, 0.7675, 0.7696]
 
-X_axis = np.arange(len(cluster_numbers))
+X_axis = np.arange(len(neighbor_numbers))
 
-plt.bar(X_axis - 0.2, userCluster_rmse_data, 0.4, label = 'RMSE')
-plt.bar(X_axis + 0.2, userCluster_mae_data, 0.4, label = 'MAE')
+plt.bar(X_axis - 0.2, userNeighbor_rmse_data, 0.4, label = 'RMSE')
+plt.bar(X_axis + 0.2, userNeighbor_mae_data, 0.4, label = 'MAE')
 
-plt.xticks(X_axis, cluster_numbers)
-plt.xlabel("Cluster Numbers")
+plt.xticks(X_axis, neighbor_numbers)
+plt.xlabel("Neighbor Numbers")
 plt.ylabel("Values")
 plt.title("User Based Collaborative Filtering")
 plt.legend()
 plt.show()
 
-itemCluster_rmse_data = [0.9479, 0.9340, 0.9332]
-itemCluster_mae_data = [0.7324, 0.7206, 0.7192]
+itemNeighbor_rmse_data = [0.9479, 0.9340, 0.9332]
+itemNeighbor_mae_data = [0.7324, 0.7206, 0.7192]
 
-plt.bar(X_axis - 0.2, itemCluster_rmse_data, 0.4, label = 'RMSE')
-plt.bar(X_axis + 0.2, itemCluster_mae_data, 0.4, label = 'MAE')
+plt.bar(X_axis - 0.2, itemNeighbor_rmse_data, 0.4, label = 'RMSE')
+plt.bar(X_axis + 0.2, itemNeighbor_mae_data, 0.4, label = 'MAE')
 
-plt.xticks(X_axis, cluster_numbers)
-plt.xlabel("Cluster Numbers")
+plt.xticks(X_axis, neighbor_numbers)
+plt.xlabel("Neighbor Numbers")
 plt.ylabel("Values")
 plt.title("Item Based Collaborative Filtering")
 plt.legend()
